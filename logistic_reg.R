@@ -1,0 +1,17 @@
+library(aod)
+library(ggplot2)
+library(ROCR)
+mydata <- read.csv("http://www.ats.ucla.edu/stat/data/binary.csv")
+mydata$rank <- factor(mydata$rank)
+mydatapos <- mydata[which(mydata$admit=='1'), ]
+mydataneg <- mydata[which(mydata$admit=='0'), ]
+indpos <- sample(1:127,replace = FALSE)
+indneg <- sample(1:273,replace = FALSE)
+train <- rbind(mydatapos[indpos[1:127],],mydataneg[indneg[1:273],])
+mylogit <- glm(admit ~ gre + gpa + rank, data = train, family = "binomial")
+test <- rbind(mydatapos[indpos[109:127],],mydataneg[indneg[234:273],])
+myresults <- predict(mylogit,test)
+myresults <- ifelse(myresults > 0.5,1,0)
+pr <- prediction(myresults, test$admit)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
